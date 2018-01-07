@@ -2,6 +2,8 @@ import re
 import os
 import numpy as np
 from random import *
+from matplotlib import pyplot as plt
+
 
 #This is a paper rock scissors player
 
@@ -40,16 +42,20 @@ game_track  = 1   #Number opf games the computer will keep track of
 total_track = pow(9,game_track)
 
 
-def CHOOSE_RPC(weight_arr, remember):
+def CHOOSE_RPC(weight_arr, hist_index):
     num = random()
-    if (num <= weight_arr[remember][0]): return 0
-    if ((num > weight_arr[remember][0]) and (num <= (weight_arr[remember][0] + weight_arr[remember][1]))): return 1
-    if ((num > (weight_arr[remember][0] + weight_arr[remember][1]))): return 2
 
+    if (num <= weight_arr[hist_index][0]): return 0
+    if ((num > weight_arr[hist_index][0]) and (num <= (weight_arr[hist_index][0] + weight_arr[hist_index][1]))): return 1
+    if ((num > (weight_arr[hist_index][0] + weight_arr[hist_index][1]))): return 2
+
+
+    
 def IG(user, computer):
     #Index individual game.
     return (3*user) + computer
-    
+
+
 def WIN_LOSE_TIE(game):
     if ((game == 0) or (game == 4) or (game == 8)):
         print('We Tie')
@@ -61,17 +67,20 @@ def WIN_LOSE_TIE(game):
         print('You Win!')
         return 'W'
 
+    
 def USER_INPUT(user):
     if ((user == 'r') or (user == 'rock')):     user = 0
     if ((user == 'p') or (user == 'paper')):    user = 1
     if ((user == 's') or (user == 'scissors')): user = 2
     return user
 
+
 def WRITE_OUTCOME(computer):
     if (computer == 0): print('I choose Rock!\n')
     if (computer == 1): print('I choose Paper!\n')
     if (computer == 2): print('I choose Scissors!\n')
 
+    
 def HISTORY_INDEX(history_arr, game_track):
 
     if (len(history_arr) < game_track): return 0
@@ -84,15 +93,28 @@ def HISTORY_INDEX(history_arr, game_track):
         ii    -= 1
 
     return index
+
+
+def ADJUST_WEIGHTS(weight_arr, count_arr, hist_index, user):
+    for ii in range(0,3): weight_arr[hist_index][ii] *= count_arr[hist_index]
+
+    if (user == 0): weight_arr[hist_index][1] += 1.0
+    if (user == 1): weight_arr[hist_index][2] += 1.0
+    if (user == 2): weight_arr[hist_index][0] += 1.0
+
+    count_arr[hist_index] += 1.0    
+    for ii in range(0,3): weight_arr[hist_index][ii] /= count_arr[hist_index]
+
 #==========================================================================================
 #==========================================================================================
 #==========================================================================================
 #==========================================================================================
 #==========================================================================================
     
-    
+print '\n\n'
+
 weight_arr  = np.full((total_track,3), 1.0/3.0)
-count_arr   = np.zeros(total_track)
+count_arr   = np.full(total_track,3.0)
 history_arr = []
 
 wins        = 0
@@ -101,27 +123,26 @@ user        = 0
 hist_index  = 0
 count       = 0
 
-while ((user == 0) or (user == 1) or (user == 2)):
-    user     = raw_input("1, 2, 3, shoot!\n")
+while ((user == 0) or (user == 1) or (user == 2) and (count < 2000)):
+    user     = raw_input('1, 2, 3, shoot!\n\n')
+
     user     = USER_INPUT(user)
-    computer = CHOOSE_RPC(weight_arr,0)
-    
+    computer = CHOOSE_RPC(weight_arr, hist_index)
+
     WRITE_OUTCOME(computer)
     
     game     = IG(user, computer)
     wlt      = WIN_LOSE_TIE(game)
     
-#    if (if count >= game_track):
-        
-#        count_arr[history_index] += 1.0
-
+    if (count >= game_track): ADJUST_WEIGHTS(weight_arr, count_arr, hist_index, user)
         
     history_arr.append(game)
-    history_index             = HISTORY_INDEX(history_arr, game_track)
+    hist_index = HISTORY_INDEX(history_arr, game_track)
 
     count += 1
     if (wlt == 'L'): loses += 1
     if (wlt == 'W'): wins  += 1
 
-    if ((wins + loses) > 0): print('\n You\'ve won ' + str(int(100.0*wins/(wins+loses))) + ' percent of our games.\n')
-    print('============================')
+    if ((wins + loses) > 0): print('\nYou\'ve won ' + str(int(100.0*wins/(wins+loses))) + ' percent of our games.\n')
+    print('\n============================\n')
+

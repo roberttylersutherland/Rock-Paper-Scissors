@@ -36,10 +36,92 @@ from random import *
 #1,0... - n
 #1,1... - n+1
 
-game_track = 1   #Number opf games the computer will keep track of
+game_track  = 1   #Number opf games the computer will keep track of
+total_track = pow(9,game_track)
 
 
-def CHOOSE_RPC(weight_arr)
+def CHOOSE_RPC(weight_arr, remember):
+    num = random()
+    if (num <= weight_arr[remember][0]): return 0
+    if ((num > weight_arr[remember][0]) and (num <= (weight_arr[remember][0] + weight_arr[remember][1]))): return 1
+    if ((num > (weight_arr[remember][0] + weight_arr[remember][1]))): return 2
 
+def IG(user, computer):
+    #Index individual game.
+    return (3*user) + computer
+    
+def WIN_LOSE_TIE(game):
+    if ((game == 0) or (game == 4) or (game == 8)):
+        print('We Tie')
+        return 'T'
+    if ((game == 1) or (game == 5) or (game == 6)):
+        print('You Lose!')
+        return 'L'
+    if ((game == 2) or (game == 3) or (game == 7)):
+        print('You Win!')
+        return 'W'
 
+def USER_INPUT(user):
+    if ((user == 'r') or (user == 'rock')):     user = 0
+    if ((user == 'p') or (user == 'paper')):    user = 1
+    if ((user == 's') or (user == 'scissors')): user = 2
+    return user
 
+def WRITE_OUTCOME(computer):
+    if (computer == 0): print('I choose Rock!\n')
+    if (computer == 1): print('I choose Paper!\n')
+    if (computer == 2): print('I choose Scissors!\n')
+
+def HISTORY_INDEX(history_arr, game_track):
+
+    if (len(history_arr) < game_track): return 0
+    
+    ii    = -1
+    index = 0
+    
+    for jj in range(0,game_track):
+        index += (history_arr[ii]*pow(9,jj))
+        ii    -= 1
+
+    return index
+#==========================================================================================
+#==========================================================================================
+#==========================================================================================
+#==========================================================================================
+#==========================================================================================
+    
+    
+weight_arr  = np.full((total_track,3), 1.0/3.0)
+count_arr   = np.zeros(total_track)
+history_arr = []
+
+wins        = 0
+loses       = 0
+user        = 0
+hist_index  = 0
+count       = 0
+
+while ((user == 0) or (user == 1) or (user == 2)):
+    user     = raw_input("1, 2, 3, shoot!\n")
+    user     = USER_INPUT(user)
+    computer = CHOOSE_RPC(weight_arr,0)
+    
+    WRITE_OUTCOME(computer)
+    
+    game     = IG(user, computer)
+    wlt      = WIN_LOSE_TIE(game)
+    
+#    if (if count >= game_track):
+        
+#        count_arr[history_index] += 1.0
+
+        
+    history_arr.append(game)
+    history_index             = HISTORY_INDEX(history_arr, game_track)
+
+    count += 1
+    if (wlt == 'L'): loses += 1
+    if (wlt == 'W'): wins  += 1
+
+    if ((wins + loses) > 0): print('\n You\'ve won ' + str(int(100.0*wins/(wins+loses))) + ' percent of our games.\n')
+    print('============================')
